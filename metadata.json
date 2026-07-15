@@ -1,0 +1,6 @@
+{
+  "name": "Asset Inventory Forms",
+  "description": "Bilingual (Amharic/English) asset inventory forms allowing entry of Warehouse Lists and Employee Fixed Assets with multi-sheet Excel export grouped by department.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

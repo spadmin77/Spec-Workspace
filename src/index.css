@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Ethiopic:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Noto Sans Ethiopic", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", "Noto Sans Ethiopic", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-50: #f8fafc;
+  --color-brand-100: #f1f5f9;
+  --color-brand-200: #e2e8f0;
+  --color-brand-300: #cbd5e1;
+  --color-brand-400: #94a3b8;
+  --color-brand-500: #3b82f6; /* Bold Blue */
+  --color-brand-600: #2563eb; /* Primary Accent Blue */
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e3a8a;
+  --color-brand-900: #0f172a;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans Ethiopic', sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+/* Custom UI styling from Bold Typography Theme */
+.bilingual-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.amharic {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.english {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input-group {
+  border-bottom: 2px solid #e2e8f0;
+  padding: 0.75rem 0;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.input-group:focus-within {
+  border-color: #2563eb;
+}
+
+input.theme-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  width: 100% !important;
+  font-size: 0.9rem !important;
+  padding-top: 0.25rem !important;
+  color: #1e293b;
+}
+
+select.theme-select {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  width: 100% !important;
+  font-size: 0.9rem !important;
+  padding-top: 0.25rem !important;
+  color: #1e293b;
+}
+
+.table-header {
+  position: sticky;
+  top: 0;
+  background: #1e293b;
+  color: #ffffff;
+  z-index: 10;
+}
+
+.font-display {
+  font-family: 'Inter', 'Noto Sans Ethiopic', sans-serif;
+  font-weight: 800;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
