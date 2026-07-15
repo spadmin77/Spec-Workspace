@@ -30,9 +30,9 @@ export async function getRole(user: User | null): Promise<AppRole> {
   try {
     const tokenResult = await getIdTokenResult(user);
     const role = (tokenResult.claims as any)?.role as AppRole | undefined;
-    return role ?? null;
+    return role ?? 'registerer';
   } catch {
-    return null;
+    return 'registerer';
   }
 }
 

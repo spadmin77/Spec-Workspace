@@ -42,8 +42,6 @@ service cloud.firestore {
         && request.resource.data.header.employeeName.size() > 0
         && request.resource.data.header.department is string
         && request.resource.data.header.department.size() > 0
-        && request.resource.data.header.employeeNo is string
-        && request.resource.data.header.employeeNo.size() > 0
         && hasAnyAssetDescription(request.resource.data);
       allow update, delete: if isAdmin();
     }
