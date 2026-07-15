@@ -182,6 +182,11 @@ export default function App() {
     return Array.from(new Set(depts));
   }, [fixedAssetRecords, empHeader.department]);
 
+  const visibleRecords = useMemo(() => {
+    if (userRole === 'admin' || !userDepartment) return fixedAssetRecords;
+    return fixedAssetRecords.filter(r => r.header.department.trim() === userDepartment);
+  }, [fixedAssetRecords, userRole, userDepartment]);
+
   const recordsByDept = useMemo(() => {
     const groups: { [dept: string]: FixedAssetRecord[] } = {};
     visibleRecords.forEach((record) => {
@@ -192,12 +197,7 @@ export default function App() {
       groups[dept].push(record);
     });
     return groups;
-  }, [fixedAssetRecords]);
-
-  const visibleRecords = useMemo(() => {
-    if (userRole === 'admin' || !userDepartment) return fixedAssetRecords;
-    return fixedAssetRecords.filter(r => r.header.department.trim() === userDepartment);
-  }, [fixedAssetRecords, userRole, userDepartment]);
+  }, [visibleRecords]);
 
   // --- COLOR GENERATOR FOR DEPARTMENTS ---
   // Returns unique styling classes for a department to group them visually.
