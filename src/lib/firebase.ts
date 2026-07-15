@@ -36,6 +36,16 @@ export async function getRole(user: User | null): Promise<AppRole> {
   }
 }
 
+export async function getUserDepartment(user: User | null): Promise<string> {
+  if (!user) return '';
+  try {
+    const tokenResult = await getIdTokenResult(user);
+    return (tokenResult.claims as any)?.department as string ?? '';
+  } catch {
+    return '';
+  }
+}
+
 export async function loginWithPassword(
   email: string,
   password: string

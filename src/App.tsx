@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { WarehouseEntry, FixedAssetHeader, FixedAssetRow, FixedAssetRecord } from './types';
 import { exportWarehouseToExcel, exportFixedAssetsToExcel, exportFixedAssetsByDepartment } from './utils/excelExport';
-import { db, auth, loginWithPassword, logoutAdmin, onAuthStateChanged, getRole, AppRole } from './lib/firebase';
+import { db, auth, loginWithPassword, logoutAdmin, onAuthStateChanged, getRole, getUserDepartment, AppRole } from './lib/firebase';
 import { collection, doc, setDoc, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { getIdToken, User } from 'firebase/auth';
 
@@ -48,6 +48,7 @@ export default function App() {
   // --- AUTH STATE ---
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [userRole, setUserRole] = useState<AppRole>(null);
+  const [userDepartment, setUserDepartment] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginMode, setLoginMode] = useState<'admin' | 'registerer'>('admin');
@@ -125,6 +126,7 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user ?? null);
       setUserRole(await getRole(user));
+      setUserDepartment(await getUserDepartment(user));
       setIsAuthenticating(false);
     });
     return () => unsubscribe();
@@ -182,7 +184,7 @@ export default function App() {
 
   const recordsByDept = useMemo(() => {
     const groups: { [dept: string]: FixedAssetRecord[] } = {};
-    fixedAssetRecords.forEach((record) => {
+    visibleRecords.forEach((record) => {
       const dept = record.header.department.trim() || 'Other / ያልተገለጸ';
       if (!groups[dept]) {
         groups[dept] = [];
@@ -191,6 +193,11 @@ export default function App() {
     });
     return groups;
   }, [fixedAssetRecords]);
+
+  const visibleRecords = useMemo(() => {
+    if (userRole === 'admin' || !userDepartment) return fixedAssetRecords;
+    return fixedAssetRecords.filter(r => r.header.department.trim() === userDepartment);
+  }, [fixedAssetRecords, userRole, userDepartment]);
 
   // --- COLOR GENERATOR FOR DEPARTMENTS ---
   // Returns unique styling classes for a department to group them visually.
@@ -649,8 +656,8 @@ export default function App() {
 
   // Viewing a saved record in read-only visual overlay
   const viewedRecord = useMemo(() => {
-    return fixedAssetRecords.find(r => r.id === selectedRecordId) || null;
-  }, [fixedAssetRecords, selectedRecordId]);
+    return visibleRecords.find(r => r.id === selectedRecordId) || null;
+  }, [visibleRecords, selectedRecordId]);
 
   const renderRecordCard = (record: FixedAssetRecord) => {
     const style = getDeptStyles(record.header.department);
@@ -816,7 +823,7 @@ export default function App() {
             Warehouse Qty: <span className="text-blue-600 font-extrabold text-sm ml-1">{warehouseEntries.length}</span>
           </div>
           <div className="bg-slate-50 px-3.5 py-2 rounded-lg border border-slate-200 shadow-2xs">
-            Saved Records: <span className="text-blue-600 font-extrabold text-sm ml-1">{fixedAssetRecords.length}</span>
+            Saved Records:             <span className="text-blue-600 font-extrabold text-sm ml-1">{visibleRecords.length}</span>
           </div>
         </div>
 
@@ -1467,8 +1474,8 @@ export default function App() {
                       <>
                         <button
                           id="export_fixed_assets_by_dept_btn"
-                          onClick={() => exportFixedAssetsByDepartment(fixedAssetRecords)}
-                          disabled={fixedAssetRecords.length === 0}
+                          onClick={() => exportFixedAssetsByDepartment(visibleRecords)}
+                          disabled={visibleRecords.length === 0}
                           className="w-full flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                         >
                           <Download className="w-4 h-4" />
@@ -1477,8 +1484,8 @@ export default function App() {
 
                         <button
                           id="export_fixed_assets_excel_btn"
-                          onClick={() => exportFixedAssetsToExcel(fixedAssetRecords)}
-                          disabled={fixedAssetRecords.length === 0}
+                          onClick={() => exportFixedAssetsToExcel(visibleRecords)}
+                          disabled={visibleRecords.length === 0}
                           className="w-full flex items-center justify-center space-x-2 bg-slate-100 hover:bg-slate-200 disabled:bg-slate-50 disabled:text-slate-300 disabled:cursor-not-allowed text-slate-700 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer border border-slate-200"
                         >
                           <FileSpreadsheet className="w-4 h-4 text-slate-500" />
@@ -1487,7 +1494,7 @@ export default function App() {
                       </>
                     )}
 
-                    {canEdit && fixedAssetRecords.length > 0 && (
+                    {canEdit && visibleRecords.length > 0 && (
                       <button
                         onClick={handleClearAllFixedAssets}
                         className="w-full flex items-center justify-center space-x-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-100 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer"
@@ -1504,11 +1511,11 @@ export default function App() {
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
                     <h4 className="font-display font-semibold text-slate-900 text-sm flex items-center space-x-1.5">
                       <Users className="w-4 h-4 text-brand-600" />
-                      <span>የተመዘገቡ ሰራተኞች / Saved Employees ({fixedAssetRecords.length})</span>
+                      <span>የተመዘገቡ ሰራተኞች / Saved Employees ({visibleRecords.length})</span>
                     </h4>
                   </div>
 
-                  {fixedAssetRecords.length === 0 ? (
+                  {visibleRecords.length === 0 ? (
                     <div className="text-center py-8 bg-slate-50 rounded-lg border border-dashed border-slate-200">
                       <HelpCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                       <p className="text-xs text-slate-400">የተቀመጠ መዝገብ የለም።</p>

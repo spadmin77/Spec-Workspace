@@ -13,16 +13,19 @@ const auth = admin.auth();
 
 const EMAIL = process.argv[2];
 const PASSWORD = process.argv[3];
+const DEPARTMENT = process.argv[4] || '';
 
 if (!EMAIL || !PASSWORD) {
-  console.error('Usage: node scripts/create-registerer.mjs <email> <password>');
+  console.error('Usage: node scripts/create-registerer.mjs <email> <password> [department]');
   process.exit(1);
 }
 
 async function main() {
   const user = await auth.createUser({ email: EMAIL, password: PASSWORD });
-  await auth.setCustomUserClaims(user.uid, { role: 'registerer' });
-  console.log(`Created registerer ${EMAIL} (uid=${user.uid})`);
+  const claims = { role: 'registerer' };
+  if (DEPARTMENT) claims.department = DEPARTMENT;
+  await auth.setCustomUserClaims(user.uid, claims);
+  console.log(`Created registerer ${EMAIL} (uid=${user.uid})${DEPARTMENT ? ` department=${DEPARTMENT}` : ''}`);
   process.exit(0);
 }
 
