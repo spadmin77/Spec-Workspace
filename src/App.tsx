@@ -561,8 +561,8 @@ export default function App() {
   };
 
   const handleSaveActiveRecordToBatch = async () => {
-    if (!empHeader.employeeName.trim() || !empHeader.employeeNo.trim() || !empHeader.department.trim()) {
-      alert('Please fill in Employee Name, ID, and Department. / እባክዎ የሰራተኛውን ስም፣ መታወቂያ ቁጥር እና የስራ ክፍል ይሙሉ!');
+    if (!empHeader.employeeName.trim() || !empHeader.department.trim()) {
+      alert('Please fill in Employee Name and Department. / እባክዎ የሰራተኛውን ስም እና የስራ ክፍል ይሙሉ!');
       return;
     }
 
