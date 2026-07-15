@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import serviceAccount from './service-account.json';
 
 admin.initializeApp({
