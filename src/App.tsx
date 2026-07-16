@@ -77,6 +77,7 @@ export default function App() {
             collapsedDepts={fixedAssets.collapsedDepts}
             setCollapsedDepts={fixedAssets.setCollapsedDepts}
             existingFixedAssetDepts={fixedAssets.existingFixedAssetDepts}
+            existingDescriptions={fixedAssets.existingDescriptions}
             visibleRecords={fixedAssets.visibleRecords}
             recordsByDept={fixedAssets.recordsByDept}
             viewedRecord={fixedAssets.viewedRecord}
