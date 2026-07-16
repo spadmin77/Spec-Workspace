@@ -48,13 +48,25 @@ export function EmployeeHeaderForm({ header, onChange, editingRecordId, existing
               value={header.department}
               onChange={(e) => onChange({ ...header, department: e.target.value })}
               placeholder="IT Department"
-              list="dept-suggestions"
             />
-            <datalist id="dept-suggestions">
-              {existingDepts.map((d) => (
-                <option key={d} value={d} />
-              ))}
-            </datalist>
+            {existingDepts.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2 max-h-24 overflow-y-auto p-2 border border-border rounded-lg bg-muted/20">
+                {existingDepts.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => onChange({ ...header, department: d })}
+                    className={`px-2.5 py-1 text-[11px] rounded-md border transition-colors cursor-pointer ${
+                      header.department === d
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs font-semibold mb-1">
