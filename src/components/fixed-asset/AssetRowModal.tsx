@@ -96,7 +96,28 @@ export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo, 
               onChange={(e) => setDesc(e.target.value)}
               placeholder="e.g. Ergonomic Office Mesh Chair"
               required
+              list="asset-desc-list"
             />
+            <datalist id="asset-desc-list">
+              <option value="High back mesh chair" />
+              <option value="Medium-back mesh chair" />
+              <option value="Swivel chair" />
+              <option value="Coffee table" />
+              <option value="Managerial table" />
+              <option value="Guest chair" />
+              <option value="Counter table" />
+              <option value="Workstation/four-station table" />
+              <option value="Photo copy machine" />
+              <option value="File cabinet" />
+              <option value="Screen" />
+              <option value="LCD monitor" />
+              <option value="Laptop computer" />
+              <option value="Conference table" />
+              <option value="Tablet" />
+              <option value="Stapler" />
+              <option value="Puncher" />
+              <option value="Server" />
+            </datalist>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
