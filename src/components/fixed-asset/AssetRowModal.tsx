@@ -9,9 +9,10 @@ interface AssetRowModalProps {
   onSubmit: (row: FixedAssetRow) => void
   editingRow: FixedAssetRow | null
   nextSNo: number
+  defaultLocation?: { area: string; building: string; floor: string; specificLocation: string }
 }
 
-export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo }: AssetRowModalProps) {
+export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo, defaultLocation }: AssetRowModalProps) {
   const [desc, setDesc] = useState('')
   const [tag, setTag] = useState('')
   const [area, setArea] = useState('')
@@ -38,10 +39,10 @@ export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo }
     } else {
       setDesc('')
       setTag('')
-      setArea('')
-      setBuilding('')
-      setFloor('')
-      setSpecificLoc('')
+      setArea(defaultLocation?.area || '')
+      setBuilding(defaultLocation?.building || '')
+      setFloor(defaultLocation?.floor || '')
+      setSpecificLoc(defaultLocation?.specificLocation || '')
       setUnit('')
       setCost('')
       setSerial('')
@@ -95,28 +96,42 @@ export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo }
               onChange={(e) => setDesc(e.target.value)}
               placeholder="e.g. Ergonomic Office Mesh Chair"
               required
-              list="asset-desc-list"
             />
-            <datalist id="asset-desc-list">
-              <option value="High back mesh chair" />
-              <option value="Medium-back mesh chair" />
-              <option value="Swivel chair" />
-              <option value="Coffee table" />
-              <option value="Managerial table" />
-              <option value="Guest chair" />
-              <option value="Counter table" />
-              <option value="Workstation/four-station table" />
-              <option value="Photo copy machine" />
-              <option value="File cabinet" />
-              <option value="Screen" />
-              <option value="LCD monitor" />
-              <option value="Laptop computer" />
-              <option value="Conference table" />
-              <option value="Tablet" />
-              <option value="Stapler" />
-              <option value="Puncher" />
-              <option value="Server" />
-            </datalist>
+            <div className="flex flex-wrap gap-1.5 mt-2 max-h-32 overflow-y-auto p-2 border border-border rounded-lg bg-muted/20">
+              {[
+                "High back mesh chair",
+                "Medium-back mesh chair",
+                "Swivel chair",
+                "Coffee table",
+                "Managerial table",
+                "Guest chair",
+                "Counter table",
+                "Workstation/four-station table",
+                "Photo copy machine",
+                "File cabinet",
+                "Screen",
+                "LCD monitor",
+                "Laptop computer",
+                "Conference table",
+                "Tablet",
+                "Stapler",
+                "Puncher",
+                "Server",
+              ].map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setDesc(item)}
+                  className={`px-2.5 py-1 text-[11px] rounded-md border transition-colors cursor-pointer ${
+                    desc === item
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

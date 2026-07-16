@@ -62,6 +62,7 @@ export function FixedAssetView({
 }: FixedAssetViewProps) {
   const [isRowModalOpen, setIsRowModalOpen] = useState(false)
   const [editingAssetRowId, setEditingAssetRowId] = useState<string | null>(null)
+  const [lastLocation, setLastLocation] = useState<{ area: string; building: string; floor: string; specificLocation: string } | undefined>(undefined)
 
   const handleAddRow = () => {
     setEditingAssetRowId(null)
@@ -86,6 +87,7 @@ export function FixedAssetView({
     } else {
       setEmpAssetRows([...empAssetRows, row])
     }
+    setLastLocation({ area: row.area, building: row.building, floor: row.floor, specificLocation: row.specificLocation })
     setIsRowModalOpen(false)
     setEditingAssetRowId(null)
   }
@@ -173,6 +175,7 @@ export function FixedAssetView({
         onSubmit={handleSubmitRow}
         editingRow={editingAssetRowId ? empAssetRows.find(r => r.id === editingAssetRowId) || null : null}
         nextSNo={empAssetRows.length + 1}
+        defaultLocation={lastLocation}
       />
 
       <RecordViewerModal
