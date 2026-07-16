@@ -28,7 +28,6 @@ interface FixedAssetViewProps {
   collapsedDepts: { [dept: string]: boolean }
   setCollapsedDepts: (d: { [dept: string]: boolean }) => void
   existingFixedAssetDepts: string[]
-  existingDescriptions: string[]
   visibleRecords: FixedAssetRecord[]
   recordsByDept: { [dept: string]: FixedAssetRecord[] }
   viewedRecord: FixedAssetRecord | null
@@ -52,7 +51,6 @@ export function FixedAssetView({
   selectedRecordId, setSelectedRecordId,
   collapsedDepts, setCollapsedDepts,
   existingFixedAssetDepts,
-  existingDescriptions,
   visibleRecords,
   recordsByDept,
   viewedRecord,
@@ -178,7 +176,6 @@ export function FixedAssetView({
         editingRow={editingAssetRowId ? empAssetRows.find(r => r.id === editingAssetRowId) || null : null}
         nextSNo={empAssetRows.length + 1}
         defaultLocation={lastLocation}
-        existingDescriptions={existingDescriptions}
       />
 
       <RecordViewerModal

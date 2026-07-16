@@ -45,15 +45,6 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     return Array.from(new Set(depts))
   }, [fixedAssetRecords, empHeader.department])
 
-  const existingDescriptions = useMemo(() => {
-    const descs = fixedAssetRecords.flatMap(r => r.rows.map(row => row.assetDescription.trim())).filter(Boolean)
-    empAssetRows.forEach(r => {
-      const d = r.assetDescription.trim()
-      if (d) descs.push(d)
-    })
-    return Array.from(new Set(descs))
-  }, [fixedAssetRecords, empAssetRows])
-
   const visibleRecords = useMemo(() => {
     if (userRole === 'admin' || !userDepartment) return fixedAssetRecords
     return fixedAssetRecords.filter(r => r.header.department.trim() === userDepartment)
@@ -158,7 +149,6 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     selectedRecordId, setSelectedRecordId,
     collapsedDepts, setCollapsedDepts,
     existingFixedAssetDepts,
-    existingDescriptions,
     visibleRecords,
     recordsByDept,
     viewedRecord,

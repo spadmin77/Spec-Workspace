@@ -10,10 +10,9 @@ interface AssetRowModalProps {
   editingRow: FixedAssetRow | null
   nextSNo: number
   defaultLocation?: { area: string; building: string; floor: string; specificLocation: string }
-  existingDescriptions?: string[]
 }
 
-export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo, defaultLocation, existingDescriptions }: AssetRowModalProps) {
+export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo, defaultLocation }: AssetRowModalProps) {
   const [desc, setDesc] = useState('')
   const [tag, setTag] = useState('')
   const [area, setArea] = useState('')
@@ -97,15 +96,7 @@ export function AssetRowModal({ isOpen, onClose, onSubmit, editingRow, nextSNo, 
               onChange={(e) => setDesc(e.target.value)}
               placeholder="e.g. Ergonomic Office Mesh Chair"
               required
-              list="asset-desc-list"
             />
-            {existingDescriptions && existingDescriptions.length > 0 && (
-              <datalist id="asset-desc-list">
-                {existingDescriptions.map((d) => (
-                  <option key={d} value={d} />
-                ))}
-              </datalist>
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
