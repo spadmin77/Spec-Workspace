@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { collection, doc, setDoc, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore'
 import { db } from '@/src/lib/firebase'
 import type { FixedAssetRecord, FixedAssetHeader, FixedAssetRow } from '@/src/types'
@@ -7,17 +7,27 @@ import type { AppRole } from '@/src/lib/firebase'
 export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartment: string) {
   const [fixedAssetRecords, setFixedAssetRecords] = useState<FixedAssetRecord[]>([])
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const saveMessageTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   const [empHeader, setEmpHeader] = useState<FixedAssetHeader>({
     employeeName: '', department: '', employeeNo: ''
   })
   const [empAssetRows, setEmpAssetRows] = useState<FixedAssetRow[]>([])
   const [empCountedBy, setEmpCountedBy] = useState('')
+
+  // empUsername (Verified By) is auto-synced with empHeader.employeeName
   const [empUsername, setEmpUsername] = useState('')
   const [empDate, setEmpDate] = useState(() => new Date().toISOString().split('T')[0])
 
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
   const [collapsedDepts, setCollapsedDepts] = useState<{ [dept: string]: boolean }>({})
+
+  // Auto-sync empUsername (Verified By) with empHeader.employeeName (Employee Name)
+  useEffect(() => {
+    setEmpUsername(empHeader.employeeName)
+  }, [empHeader.employeeName])
 
   useEffect(() => {
     if (!isStaff) {
@@ -64,6 +74,21 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     return visibleRecords.find(r => r.id === selectedRecordId) || null
   }, [visibleRecords, selectedRecordId])
 
+  const clearSaveMessage = useCallback(() => {
+    if (saveMessageTimeout.current) clearTimeout(saveMessageTimeout.current)
+    setSaveMessage(null)
+  }, [])
+
+  const showSaveMessage = useCallback((type: 'success' | 'error', text: string) => {
+    clearSaveMessage()
+    setSaveMessage({ type, text })
+    saveMessageTimeout.current = setTimeout(() => setSaveMessage(null), 4000)
+  }, [clearSaveMessage])
+
+  useEffect(() => {
+    return () => { if (saveMessageTimeout.current) clearTimeout(saveMessageTimeout.current) }
+  }, [])
+
   const handleCancelRecordEdit = useCallback(() => {
     setEmpHeader({ employeeName: '', department: '', employeeNo: '' })
     setEmpAssetRows([])
@@ -72,58 +97,79 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
   }, [])
 
   const handleSaveActiveRecord = useCallback(async () => {
-    const recordId = editingRecordId || `rec-${Date.now()}`
-    const newRecord: FixedAssetRecord = {
-      id: recordId,
-      header: {
-        employeeName: empHeader.employeeName.trim(),
-        department: empHeader.department.trim(),
-        employeeNo: empHeader.employeeNo.trim()
-      },
-      rows: empAssetRows.filter(r => r.assetDescription.trim().length > 0).map((r, idx) => ({ ...r, sNo: idx + 1 })),
-      countedBy: empCountedBy.trim(),
-      username: empUsername.trim(),
-      date: empDate || ''
+    if (isSaving) return
+
+    const employeeName = empHeader.employeeName.trim()
+    const department = empHeader.department.trim()
+    const employeeNo = empHeader.employeeNo.trim()
+    const countedBy = empCountedBy.trim()
+
+    if (!employeeName || !department) {
+      showSaveMessage('error', 'Employee Name and Department are required.')
+      return { success: false }
+    }
+    const validRows = empAssetRows.filter(r => r.assetDescription.trim().length > 0)
+    if (validRows.length === 0) {
+      showSaveMessage('error', 'At least one asset row with a description is required.')
+      return { success: false }
     }
 
-    setFixedAssetRecords((prev) => {
-      const idx = prev.findIndex(r => r.id === newRecord.id)
-      if (idx > -1) {
-        const next = [...prev]
-        next[idx] = newRecord
-        return next
+    setIsSaving(true)
+    clearSaveMessage()
+
+    try {
+      const recordId = editingRecordId || `rec-${Date.now()}`
+      const isUpdate = !!editingRecordId
+
+      // Verified By (username) always equals Employee Name
+      const newRecord: FixedAssetRecord = {
+        id: recordId,
+        header: { employeeName, department, employeeNo },
+        rows: validRows.map((r, idx) => ({ ...r, sNo: idx + 1 })),
+        countedBy,
+        username: employeeName,
+        date: empDate || ''
       }
-      return [...prev, newRecord]
-    })
 
-    await setDoc(doc(db, 'fixedAssetRecords', newRecord.id), newRecord)
+      await setDoc(doc(db, 'fixedAssetRecords', newRecord.id), newRecord)
 
-    setEmpHeader({ employeeName: '', department: '', employeeNo: '' })
-    setEmpAssetRows([])
-    setEmpCountedBy('')
-    setEditingRecordId(null)
+      setEmpHeader({ employeeName: '', department: '', employeeNo: '' })
+      setEmpAssetRows([])
+      setEmpCountedBy('')
+      setEditingRecordId(null)
 
-    return editingRecordId ? 'updated' : 'created'
-  }, [editingRecordId, empHeader, empAssetRows, empCountedBy, empUsername, empDate])
+      showSaveMessage('success', isUpdate ? 'Record updated successfully!' : 'Record saved successfully!')
+      return { success: true }
+    } catch (err: any) {
+      showSaveMessage('error', err?.message || 'Failed to save record. Please try again.')
+      return { success: false }
+    } finally {
+      setIsSaving(false)
+    }
+  }, [editingRecordId, empHeader, empAssetRows, empCountedBy, empDate, isSaving, showSaveMessage, clearSaveMessage])
 
   const handleDeleteRecord = useCallback(async (id: string) => {
-    setFixedAssetRecords(prev => prev.filter(r => r.id !== id))
-    if (selectedRecordId === id) setSelectedRecordId(null)
-    await deleteDoc(doc(db, 'fixedAssetRecords', id))
-  }, [selectedRecordId])
+    try {
+      await deleteDoc(doc(db, 'fixedAssetRecords', id))
+      if (selectedRecordId === id) setSelectedRecordId(null)
+      showSaveMessage('success', 'Record deleted successfully.')
+    } catch (err: any) {
+      showSaveMessage('error', err?.message || 'Failed to delete record.')
+    }
+  }, [selectedRecordId, showSaveMessage])
 
   const handleClearAll = useCallback(async () => {
-    const backup = [...fixedAssetRecords]
-    setFixedAssetRecords([])
-    setSelectedRecordId(null)
+    if (!window.confirm('Delete ALL saved records? This cannot be undone.')) return
     try {
-      for (const record of backup) {
+      for (const record of fixedAssetRecords) {
         await deleteDoc(doc(db, 'fixedAssetRecords', record.id))
       }
-    } catch {
-      setFixedAssetRecords(backup)
+      setSelectedRecordId(null)
+      showSaveMessage('success', 'All records cleared.')
+    } catch (err: any) {
+      showSaveMessage('error', err?.message || 'Failed to clear records.')
     }
-  }, [fixedAssetRecords])
+  }, [fixedAssetRecords, showSaveMessage])
 
   const handleEditRecord = useCallback((record: FixedAssetRecord) => {
     setEmpHeader({
@@ -133,7 +179,7 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     })
     setEmpAssetRows(record.rows)
     setEmpCountedBy(record.countedBy || '')
-    setEmpUsername(record.username || '')
+    // empUsername will auto-sync via the useEffect on empHeader.employeeName
     if (record.date) setEmpDate(record.date)
     setEditingRecordId(record.id)
   }, [])
@@ -152,6 +198,9 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     visibleRecords,
     recordsByDept,
     viewedRecord,
+    isSaving,
+    saveMessage,
+    clearSaveMessage,
     handleCancelRecordEdit,
     handleSaveActiveRecord,
     handleDeleteRecord,

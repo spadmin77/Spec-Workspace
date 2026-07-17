@@ -1,4 +1,4 @@
 export { Header } from './Header'
 export { Footer } from './Footer'
-export { LoginModal } from './LoginModal'
+export { LoginPage } from './LoginPage'
 export { RegistererManagerModal } from './RegistererManagerModal'

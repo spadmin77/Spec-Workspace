@@ -1,4 +1,4 @@
-import { FileSpreadsheet, UserCheck, RefreshCw } from 'lucide-react'
+import { FileSpreadsheet, RefreshCw, LogOut } from 'lucide-react'
 import { Tabs, TabsTrigger } from '@/src/components/ui'
 import type { User } from 'firebase/auth'
 import type { AppRole } from '@/src/lib/firebase'
@@ -11,7 +11,6 @@ interface HeaderProps {
   isAuthenticating: boolean
   warehouseCount: number
   recordsCount: number
-  onLoginClick: () => void
   onLogout: () => void
 }
 
@@ -23,7 +22,6 @@ export function Header({
   isAuthenticating,
   warehouseCount,
   recordsCount,
-  onLoginClick,
   onLogout,
 }: HeaderProps) {
   return (
@@ -99,25 +97,13 @@ export function Header({
                 </div>
                 <button
                   onClick={onLogout}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground border transition-colors cursor-pointer"
                 >
-                  Sign Out
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sign Out</span>
                 </button>
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="hidden md:inline text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
-                  VIEW ONLY
-                </span>
-                <button
-                  onClick={onLoginClick}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
-                >
-                  <UserCheck className="w-3.5 h-3.5" />
-                  <span>Sign In</span>
-                </button>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

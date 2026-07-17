@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { Header, Footer, LoginModal, RegistererManagerModal } from '@/src/components/layout'
+import { Header, Footer, LoginPage, RegistererManagerModal } from '@/src/components/layout'
 import { WarehouseView } from '@/src/components/warehouse'
 import { FixedAssetView } from '@/src/components/fixed-asset'
 import { useAuth, useWarehouse, useFixedAssets } from '@/src/hooks'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'warehouse' | 'fixed_asset'>('warehouse')
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegManagerModalOpen, setIsRegManagerModalOpen] = useState(false)
 
   const auth = useAuth()
@@ -21,6 +20,25 @@ export default function App() {
     try { await auth.logoutAdmin() } catch (e) { console.warn('Sign out warn:', e) }
   }
 
+  if (auth.isAuthenticating) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Verifying session...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!auth.currentUser) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <LoginPage onLogin={handleLogin} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header
@@ -31,9 +49,6 @@ export default function App() {
         isAuthenticating={auth.isAuthenticating}
         warehouseCount={warehouse.warehouseEntries.length}
         recordsCount={fixedAssets.visibleRecords.length}
-        onLoginClick={() => {
-          setIsLoginModalOpen(true)
-        }}
         onLogout={handleLogout}
       />
 
@@ -80,6 +95,9 @@ export default function App() {
             visibleRecords={fixedAssets.visibleRecords}
             recordsByDept={fixedAssets.recordsByDept}
             viewedRecord={fixedAssets.viewedRecord}
+            isSaving={fixedAssets.isSaving}
+            saveMessage={fixedAssets.saveMessage}
+            clearSaveMessage={fixedAssets.clearSaveMessage}
             handleCancelRecordEdit={fixedAssets.handleCancelRecordEdit}
             handleSaveActiveRecord={fixedAssets.handleSaveActiveRecord}
             handleDeleteRecord={fixedAssets.handleDeleteRecord}
@@ -88,12 +106,6 @@ export default function App() {
           />
         )}
       </main>
-
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
-      />
 
       <RegistererManagerModal
         isOpen={isRegManagerModalOpen}

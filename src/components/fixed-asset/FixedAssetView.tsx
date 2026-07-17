@@ -31,8 +31,11 @@ interface FixedAssetViewProps {
   visibleRecords: FixedAssetRecord[]
   recordsByDept: { [dept: string]: FixedAssetRecord[] }
   viewedRecord: FixedAssetRecord | null
+  isSaving: boolean
+  saveMessage: { type: 'success' | 'error'; text: string } | null
+  clearSaveMessage: () => void
   handleCancelRecordEdit: () => void
-  handleSaveActiveRecord: () => Promise<string>
+  handleSaveActiveRecord: () => Promise<{ success: boolean }>
   handleDeleteRecord: (id: string, e: import('react').MouseEvent) => Promise<void>
   handleClearAll: () => Promise<void>
   handleEditRecord: (record: FixedAssetRecord) => void
@@ -54,6 +57,9 @@ export function FixedAssetView({
   visibleRecords,
   recordsByDept,
   viewedRecord,
+  isSaving,
+  saveMessage,
+  clearSaveMessage,
   handleCancelRecordEdit,
   handleSaveActiveRecord,
   handleDeleteRecord,
@@ -93,19 +99,7 @@ export function FixedAssetView({
   }
 
   const handleSave = async () => {
-    if (!empHeader.employeeName.trim() || !empHeader.department.trim()) {
-      alert('Please fill in Employee Name and Department.')
-      return
-    }
-    const validRows = empAssetRows.filter(r => r.assetDescription.trim().length > 0)
-    if (validRows.length === 0) {
-      alert('At least one asset row with a description is required.')
-      return
-    }
-    const result = await handleSaveActiveRecord()
-    alert(result === 'updated'
-      ? 'Record updated successfully!'
-      : 'Record saved successfully!')
+    await handleSaveActiveRecord()
   }
 
   return (
@@ -139,13 +133,15 @@ export function FixedAssetView({
               <VerificationSignatures
                 countedBy={empCountedBy}
                 onCountedByChange={setEmpCountedBy}
-                username={empUsername}
-                onUsernameChange={setEmpUsername}
+                employeeName={empHeader.employeeName}
                 date={empDate}
                 onDateChange={setEmpDate}
                 canAdd={canAdd}
                 canEdit={canEdit}
                 editingRecordId={editingRecordId}
+                isSaving={isSaving}
+                saveMessage={saveMessage}
+                onClearMessage={clearSaveMessage}
                 onSave={handleSave}
                 onCancelEdit={handleCancelRecordEdit}
               />

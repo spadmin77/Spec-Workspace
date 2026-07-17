@@ -1,16 +1,18 @@
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Loader2, AlertCircle, X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/src/components/ui'
 
 interface VerificationSignaturesProps {
   countedBy: string
   onCountedByChange: (value: string) => void
-  username: string
-  onUsernameChange: (value: string) => void
+  employeeName: string
   date: string
   onDateChange: (value: string) => void
   canAdd: boolean
   canEdit: boolean
   editingRecordId: string | null
+  isSaving: boolean
+  saveMessage: { type: 'success' | 'error'; text: string } | null
+  onClearMessage: () => void
   onSave: () => void
   onCancelEdit: () => void
 }
@@ -18,13 +20,15 @@ interface VerificationSignaturesProps {
 export function VerificationSignatures({
   countedBy,
   onCountedByChange,
-  username,
-  onUsernameChange,
+  employeeName,
   date,
   onDateChange,
   canAdd,
   canEdit,
   editingRecordId,
+  isSaving,
+  saveMessage,
+  onClearMessage,
   onSave,
   onCancelEdit,
 }: VerificationSignaturesProps) {
@@ -37,6 +41,26 @@ export function VerificationSignatures({
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {saveMessage && (
+          <div className={`mb-4 flex items-center justify-between gap-2 px-4 py-3 rounded-lg text-xs font-medium ${
+            saveMessage.type === 'success'
+              ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30'
+              : 'bg-red-500/20 text-red-200 border border-red-500/30'
+          }`}>
+            <div className="flex items-center gap-2">
+              {saveMessage.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0" />
+              )}
+              <span>{saveMessage.text}</span>
+            </div>
+            <button onClick={onClearMessage} className="p-0.5 hover:bg-background/10 rounded cursor-pointer">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
           <div>
             <label className="block text-xs font-semibold text-background/70 mb-1">
@@ -54,10 +78,12 @@ export function VerificationSignatures({
               Verified By / ኃላፊ
             </label>
             <input
-              value={username}
-              onChange={(e) => onUsernameChange(e.target.value)}
-              placeholder="Verified manager"
-              className="w-full px-3 py-2 text-xs bg-background/10 border border-background/20 rounded-lg text-background placeholder:text-background/40 focus:outline-hidden focus:ring-2 focus:ring-ring/50 transition-all"
+              value={employeeName}
+              readOnly
+              tabIndex={-1}
+              placeholder="Auto-filled from Employee Name"
+              className="w-full px-3 py-2 text-xs bg-background/10 border border-background/20 rounded-lg text-background/80 placeholder:text-background/40 cursor-default opacity-80"
+              title="Auto-synced with Employee Name"
             />
           </div>
           <div>
@@ -82,7 +108,8 @@ export function VerificationSignatures({
               <button
                 type="button"
                 onClick={onCancelEdit}
-                className="px-4 py-2.5 bg-background/10 hover:bg-background/20 border border-background/20 text-background/70 hover:text-background rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                disabled={isSaving}
+                className="px-4 py-2.5 bg-background/10 hover:bg-background/20 border border-background/20 text-background/70 hover:text-background rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel Edit / ሰርዝ
               </button>
@@ -90,12 +117,22 @@ export function VerificationSignatures({
             {(canAdd || canEdit) && (
               <button
                 onClick={onSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs"
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>
-                  {editingRecordId ? 'Update Record / አስተካክል' : 'Save Record / አስቀምጥ'}
-                </span>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>
+                      {editingRecordId ? 'Update Record / አስተካክል' : 'Save Record / አስቀምጥ'}
+                    </span>
+                  </>
+                )}
               </button>
             )}
           </div>
