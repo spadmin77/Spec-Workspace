@@ -28,6 +28,8 @@ interface FixedAssetViewProps {
   collapsedDepts: { [dept: string]: boolean }
   setCollapsedDepts: (d: { [dept: string]: boolean }) => void
   existingFixedAssetDepts: string[]
+  employeeSearch: string
+  setEmployeeSearch: (v: string) => void
   visibleRecords: FixedAssetRecord[]
   recordsByDept: { [dept: string]: FixedAssetRecord[] }
   viewedRecord: FixedAssetRecord | null
@@ -54,6 +56,7 @@ export function FixedAssetView({
   selectedRecordId, setSelectedRecordId,
   collapsedDepts, setCollapsedDepts,
   existingFixedAssetDepts,
+  employeeSearch, setEmployeeSearch,
   visibleRecords,
   recordsByDept,
   viewedRecord,
@@ -153,6 +156,8 @@ export function FixedAssetView({
           <SavedRecordsPanel
             recordsByDept={recordsByDept}
             visibleRecords={visibleRecords}
+            employeeSearch={employeeSearch}
+            onEmployeeSearchChange={setEmployeeSearch}
             selectedRecordId={selectedRecordId}
             collapsedDepts={collapsedDepts}
             canEdit={canEdit}

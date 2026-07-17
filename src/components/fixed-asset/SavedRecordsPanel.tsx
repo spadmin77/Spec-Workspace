@@ -1,14 +1,14 @@
-import { Download, FileSpreadsheet, Trash2, Users, HelpCircle } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/src/components/ui'
+import { Download, FileSpreadsheet, Trash2, Users, HelpCircle, Search } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/src/components/ui'
 import { DeptSection } from './DeptSection'
 import { exportFixedAssetsToExcel, exportFixedAssetsByDepartment } from '@/src/utils/excelExport'
 import type { FixedAssetRecord } from '@/src/types'
 
-
-
 interface SavedRecordsPanelProps {
   recordsByDept: { [dept: string]: FixedAssetRecord[] }
   visibleRecords: FixedAssetRecord[]
+  employeeSearch: string
+  onEmployeeSearchChange: (v: string) => void
   selectedRecordId: string | null
   collapsedDepts: { [dept: string]: boolean }
   canEdit: boolean
@@ -22,6 +22,8 @@ interface SavedRecordsPanelProps {
 export function SavedRecordsPanel({
   recordsByDept,
   visibleRecords,
+  employeeSearch,
+  onEmployeeSearchChange,
   selectedRecordId,
   collapsedDepts,
   canEdit,
@@ -82,11 +84,24 @@ export function SavedRecordsPanel({
           </div>
         </CardHeader>
         <CardContent>
+          <div className="relative mb-3">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              value={employeeSearch}
+              onChange={(e) => onEmployeeSearchChange(e.target.value)}
+              placeholder="Search by employee name or ID..."
+              className="pl-8 h-8 text-xs"
+            />
+          </div>
           {visibleRecords.length === 0 ? (
             <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed">
               <HelpCircle className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">No saved records yet.</p>
-              <p className="text-[10px] text-muted-foreground/60 italic">Complete and save a form above.</p>
+              <p className="text-xs text-muted-foreground">
+                {employeeSearch.trim() ? 'No employees match your search.' : 'No saved records yet.'}
+              </p>
+              <p className="text-[10px] text-muted-foreground/60 italic">
+                {employeeSearch.trim() ? 'Try a different name or ID.' : 'Complete and save a form above.'}
+              </p>
             </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-1">

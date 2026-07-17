@@ -23,6 +23,7 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
 
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
   const [collapsedDepts, setCollapsedDepts] = useState<{ [dept: string]: boolean }>({})
+  const [employeeSearch, setEmployeeSearch] = useState('')
 
   // Auto-sync empUsername (Verified By) with empHeader.employeeName (Employee Name)
   useEffect(() => {
@@ -60,15 +61,24 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     return fixedAssetRecords.filter(r => r.header.department.trim() === userDepartment)
   }, [fixedAssetRecords, userRole, userDepartment])
 
+  const filteredVisibleRecords = useMemo(() => {
+    if (!employeeSearch.trim()) return visibleRecords
+    const q = employeeSearch.toLowerCase()
+    return visibleRecords.filter(r =>
+      r.header.employeeName.toLowerCase().includes(q) ||
+      r.header.employeeNo.toLowerCase().includes(q)
+    )
+  }, [visibleRecords, employeeSearch])
+
   const recordsByDept = useMemo(() => {
     const groups: { [dept: string]: FixedAssetRecord[] } = {}
-    visibleRecords.forEach((record) => {
+    filteredVisibleRecords.forEach((record) => {
       const dept = record.header.department.trim() || 'Other'
       if (!groups[dept]) groups[dept] = []
       groups[dept].push(record)
     })
     return groups
-  }, [visibleRecords])
+  }, [filteredVisibleRecords])
 
   const viewedRecord = useMemo(() => {
     return visibleRecords.find(r => r.id === selectedRecordId) || null
@@ -195,6 +205,7 @@ export function useFixedAssets(isStaff: boolean, userRole: AppRole, userDepartme
     selectedRecordId, setSelectedRecordId,
     collapsedDepts, setCollapsedDepts,
     existingFixedAssetDepts,
+    employeeSearch, setEmployeeSearch,
     visibleRecords,
     recordsByDept,
     viewedRecord,
